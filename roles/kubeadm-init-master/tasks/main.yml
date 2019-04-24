@@ -1,0 +1,65 @@
+---
+- name: Download Kubeadm container images
+  shell: kubeadm config images pull
+
+- name: Copy kubeadm config to init master
+  template:
+    src: kubeadm-config.yaml.j2
+    dest: /etc/kubernetes/kubeadm-config.yaml
+
+- name: Kubeadm init
+  shell: kubeadm init --config=/etc/kubernetes/kubeadm-config.yaml --ignore-preflight-errors=Swap
+
+- name: Create .kube folder
+  file:
+    path: "~{{ ansible_ssh_user }}/.kube"
+    state: directory
+    owner: "{{ ansible_ssh_user }}"
+
+- name: Copy admin.conf to .kube folder
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "~{{ ansible_ssh_user }}/.kube/config"
+    owner: "{{ ansible_ssh_user }}"
+    remote_src: yes
+
+- name: Create .kube folder
+  file:
+    path: "/root/.kube"
+    state: directory
+    owner: "root"
+
+- name: Copy admin.conf to .kube folder
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "/root/.kube/config"
+    owner: "root"
+    remote_src: yes
+
+- name: Fetch pki certs
+  fetch:
+    src: "{{ item }}"
+    dest: /tmp/kubeadm-ha/pki
+    flat: yes
+  with_items:
+    - /etc/kubernetes/pki/ca.crt
+    - /etc/kubernetes/pki/ca.key
+    - /etc/kubernetes/pki/sa.key
+    - /etc/kubernetes/pki/sa.pub
+    - /etc/kubernetes/pki/front-proxy-ca.crt
+    - /etc/kubernetes/pki/front-proxy-ca.key
+
+- name: Fetch etcd certs
+  fetch:
+    src: "{{ item }}"
+    dest: /tmp/kubeadm-ha/pki/etcd
+    flat: yes
+  with_items:
+    - /etc/kubernetes/pki/etcd/ca.crt
+    - /etc/kubernetes/pki/etcd/ca.key
+
+- name: Fetch admin config file
+  fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: /tmp/kubeadm-ha/pki
+    flat: yes
