@@ -1,5 +1,4 @@
 - hosts: k8s
   become: yes
   roles:
-    - lvmthinpool
-    - docker
+    - docker-ce
