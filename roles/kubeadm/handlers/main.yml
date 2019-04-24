@@ -1,0 +1,15 @@
+---
+- name: restart docker service
+  become: yes
+  systemd:
+    name: docker
+    state: restarted
+    enabled: yes
+
+- name: restart kubelet service
+  become: yes
+  systemd:
+    name: kubelet
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
