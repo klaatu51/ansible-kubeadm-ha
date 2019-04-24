@@ -1,0 +1,11 @@
+---
+- name: Generate join token
+  shell: kubeadm token create --print-join-command
+  register: join_command
+  delegate_to: "{{ groups['k8s-masters'][0] }}"
+
+- set_fact:
+    kubeadm_join: "{{ join_command.stdout }}"
+
+- name: Run kubeadm join
+  shell: "{{ kubeadm_join }}"
