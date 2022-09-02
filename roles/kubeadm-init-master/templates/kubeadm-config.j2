@@ -7,5 +7,5 @@ apiServer:
   - "{{ load_balancer_dns }}"
 controlPlaneEndpoint: "{{ load_balancer_dns }}:{{ load_balancer_port }}"
 networking:
-    podSubnet: "{{ pod_subnet }}"
-    serviceSubnet: "{{ service_subnet }}"
+  podSubnet: "{{ pod_subnet }}"
+  serviceSubnet: "{{ service_subnet }}"

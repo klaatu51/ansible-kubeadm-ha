@@ -1,7 +1,4 @@
 ---
-- name: Download Kubeadm container images
-  shell: kubeadm config images pull
-
 - name: Create Kubernetes folders
   file:
     path: /etc/kubernetes/pki/etcd
@@ -10,21 +7,24 @@
     owner: root
     group: root
 
-  - name: Copy kubernetes master PKI files
-    copy: 
-    src: /tmp/kubeadm-ha/
-    dest: /etc/kubernetes/
-    owner: root
-    group: root
-    mode: preserve
+- name: Copy kubernetes master PKI files
+  copy: 
+  src: /tmp/kubeadm-ha/
+  dest: /etc/kubernetes/
+  owner: root
+  group: root
+  mode: preserve
 
-  - name: Generate master join token
-    shell: kubeadm token create --print-join-command
-    register: join_command
-    delegate_to: "{{groups['k8s-masters'][0]}}"
+- name: Generate master join token
+  shell: kubeadm token create --print-join-command
+  register: jkubeadm_join_command
+  delegate_to: "{{groups['k8s-masters'][0]}}"
 
 - set_fact:
-    kubeadm_join: "{{ join_command.stdout }}"
+    kubeadm_join: "{{ kubeadm_join_command.stdout }}"
 
 - name: Join Master replicas to cluster
   shell: "{{ kubeadm_join }} --experimental-control-plane"
+
+- pause:
+    prompt: "Wait for containers to Pull and install"

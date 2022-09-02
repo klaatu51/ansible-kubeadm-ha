@@ -1,14 +1,19 @@
 ---
-- name: Download Kubeadm container images
-  shell: kubeadm config images pull
-
 - name: Copy kubeadm config to init master
   template:
-    src: kubeadm-config.yaml.j2
-    dest: /etc/kubernetes/kubeadm-config.yaml
+    src: kubeadm-config.j2
+    dest: "/tmp/kubeadm-config.yaml"
 
 - name: Kubeadm init
-  shell: kubeadm init --config=/etc/kubernetes/kubeadm-config.yaml --ignore-preflight-errors=Swap
+  command: >
+    kubeadm init 
+    --config=/tmp/kubeadm-config.yaml
+    {{ kubeadm_init_extra_args }}
+  register: rslt
+  ignore_errors: true
+
+- pause:
+    prompt: "Validate kubeadm init"
 
 - name: Create .kube folder
   file:
@@ -36,30 +41,32 @@
     owner: "root"
     remote_src: yes
 
-- name: Fetch pki certs
+- name: Fetch pki certs from primary control plane node
   fetch:
-    src: "{{ item }}"
-    dest: /tmp/kubeadm-ha/pki
+    src: /etc/kubernetes/pki/{{item}}
+    dest: /tmp/kubeadm-ha/pki/{{item}}
     flat: yes
   with_items:
-    - /etc/kubernetes/pki/ca.crt
-    - /etc/kubernetes/pki/ca.key
-    - /etc/kubernetes/pki/sa.key
-    - /etc/kubernetes/pki/sa.pub
-    - /etc/kubernetes/pki/front-proxy-ca.crt
-    - /etc/kubernetes/pki/front-proxy-ca.key
+    - ca.crt
+    - ca.key
+    - sa.key
+    - sa.pub
+    - front-proxy-ca.crt
+    - front-proxy-ca.key
 
-- name: Fetch etcd certs
+- name: Fetch etcd certs from primary control plane node
   fetch:
-    src: "{{ item }}"
-    dest: /tmp/kubeadm-ha/pki/etcd
+    src: /etc/kubernetes/pki/etcd/{{item}}
+    dest: /tmp/kubeadm-ha/pki/etcd/{{item}}
     flat: yes
   with_items:
-    - /etc/kubernetes/pki/etcd/ca.crt
-    - /etc/kubernetes/pki/etcd/ca.key
+    - ca.crt
+    - ca.key
 
-- name: Fetch admin config file
+- name: "Fetching Kubernetes Master Admin files from primary master"
   fetch:
-    src: /etc/kubernetes/admin.conf
-    dest: /tmp/kubeadm-ha/pki
+    src: /etc/kubernetes/{{item}}
+    dest: /tmp/kubeadm-ha/{{item}}
     flat: yes
+  with_items:
+    - admin.conf 

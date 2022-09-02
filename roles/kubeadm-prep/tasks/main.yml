@@ -1,0 +1,78 @@
+---
+- name: Remove swapfile from /etc/fstab
+  mount:
+    name: swap
+    fstype: swap
+    state: absent
+
+- name: Turn swap off
+  shell: swapoff -a
+
+- name: Set Enforce
+  command: setenforce 0
+  ignore_errors: True
+
+- name: Add kubernetes repo
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes repo
+    baseurl: https://pkgs.domain.local/linux/kubernetes/yum/repos/kubernetes-el7-$basearch
+    gpgcheck: no
+    sslverify: no
+    enabled: false
+
+- name: Install kubelet package
+  become: true
+  yum:
+    name: "kubelet-{{kubeadm_version}}"
+    enablerepo: kubernetes
+
+- name: Install kubectl package
+  become: true
+  yum:
+    name: "kubectl-{{kubeadm_version}}"
+    enablerepo: kubernetes
+
+- name: Install kubeadm package
+  become: true
+  yum:
+    name: "kubeadm-{{kubeadm_version}}"
+    enablerepo: kubernetes
+
+- name: Add vm swappiness
+  lineinfile:
+    path: /etc/sysctl.d/k8s.conf
+    line: 'vm.swappiness = 0'
+    state: present
+    create: yes
+
+- name: Add vm overcommit_memory
+  lineinfile:
+    path: /etc/sysctl.d/k8s.conf
+    line: 'vm.overcommit_memory = 1'
+    state: present
+    create: yes
+
+- name: Add netbridge config ip4
+  lineinfile:
+    path: /etc/sysctl.d/k8s.conf
+    line: 'net.bridge.bridge-nf-call-iptables = 1'
+    state: present
+    create: yes
+
+- name: Increase net ipv4 tcp_max_syn_backlog
+  lineinfile:
+    path: /etc/sysctl.d/k8s.conf
+    line: 'net.ipv4.tcp_max_syn_backlog=2621440'
+    state: present
+    create: yes
+
+- name: update sysctl
+  command: sysctl --system
+
+- name: Start kubelet
+  systemd:
+    state: started
+    daemon_reload: yes
+    name: kubelet
+    enabled: yes
