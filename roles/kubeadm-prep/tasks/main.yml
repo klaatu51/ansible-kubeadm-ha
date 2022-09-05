@@ -12,32 +12,32 @@
   command: setenforce 0
   ignore_errors: True
 
-# - name: Add kubernetes repo
-#   yum_repository:
-#     name: Kubernetes
-#     description: Kubernetes repo
-#     baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
-#     gpgcheck: yes
-#     gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-#     sslverify: no
-#     enabled: false
+- name: Add kubernetes repo
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes repo
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+    gpgcheck: yes
+    gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    sslverify: no
+    enabled: false
 
 - name: Install kubelet package
   become: true
   yum:
-    name: "kubernetes-kubelet"
+    name: "kubelet-{{ k8s_version }}"
     enablerepo: kubernetes
 
 - name: Install kubectl package
   become: true
   yum:
-    name: "kubernetes-kubectl"
+    name: "kubectl-{{ k8s_version }}"
     enablerepo: kubernetes
 
 - name: Install kubeadm package
   become: true
   yum:
-    name: "kubernetes-kubeadm"
+    name: "kubeadm-{{ k8s_version }}"
     enablerepo: kubernetes
 
 - name: Add vm swappiness
