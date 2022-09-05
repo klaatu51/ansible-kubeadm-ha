@@ -14,29 +14,30 @@
 
 - name: Add kubernetes repo
   yum_repository:
-    name: kubernetes
+    name: Kubernetes
     description: Kubernetes repo
-    baseurl: https://pkgs.domain.local/linux/kubernetes/yum/repos/kubernetes-el7-$basearch
-    gpgcheck: no
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+    gpgcheck: yes
+    gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
     sslverify: no
     enabled: false
 
 - name: Install kubelet package
   become: true
   yum:
-    name: "kubelet-{{kubeadm_version}}"
+    name: "kubelet-{{ k8s_version }}"
     enablerepo: kubernetes
 
 - name: Install kubectl package
   become: true
   yum:
-    name: "kubectl-{{kubeadm_version}}"
+    name: "kubectl-{{ k8s_version }}"
     enablerepo: kubernetes
 
 - name: Install kubeadm package
   become: true
   yum:
-    name: "kubeadm-{{kubeadm_version}}"
+    name: "kubeadm-{{ k8s_version }}"
     enablerepo: kubernetes
 
 - name: Add vm swappiness
