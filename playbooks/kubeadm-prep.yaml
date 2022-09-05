@@ -1,4 +1,4 @@
 - hosts: k8s
   become: yes
   roles:
-    - kubeadm
+    - kubeadm-prep
