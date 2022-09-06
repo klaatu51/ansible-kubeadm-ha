@@ -16,11 +16,11 @@
   yum_repository:
     name: kubernetes
     description: Kubernetes repo
-    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-$basearch
     gpgcheck: yes
     gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
     sslverify: no
-    enabled: false
+    enabled: true
 
 - name: Install kubelet package
   become: true
